@@ -10,6 +10,11 @@ type (
 		Wrap(http.Handler) http.Handler
 	}
 
+	Racker interface {
+		http.Handler
+		Wrap(wrapper ...Wrapper)
+	}
+
 	rack struct{ http.Handler }
 )
 
