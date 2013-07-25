@@ -13,3 +13,7 @@ func (ø Before) Wrap(in http.Handler) (out http.Handler) {
 		in.ServeHTTP(w, r)
 	})
 }
+
+func BeforeFunc(fn func(http.ResponseWriter, *http.Request)) Before {
+	return Before{http.HandlerFunc(fn)}
+}

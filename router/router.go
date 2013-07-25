@@ -7,16 +7,27 @@ import (
 	"path"
 )
 
+type Route struct{ *mux.Route }
+
+func (ø *Route) URL(vals ...string) string {
+	u, err := ø.Route.URL(vals...)
+	if err != nil {
+		panic(err.Error())
+	}
+	return u.String()
+}
+
 type Router struct {
 	*mux.Router
-	rack        rack.Racker
-	path        string
-	middlewares []rack.Wrapper
+	rack         rack.Racker
+	path         string
+	middlewares  []rack.Wrapper
+	hasSubroutes bool
 }
 
 func New(path string, middlewares ...rack.Wrapper) (ø *Router) {
 	router := mux.NewRouter()
-	if path != "" {
+	if path != "/" {
 		router = router.PathPrefix(path).Subrouter()
 	}
 	ø = &Router{
@@ -29,6 +40,13 @@ func New(path string, middlewares ...rack.Wrapper) (ø *Router) {
 	return
 }
 
+func (ø *Router) Wrap(middlewares ...rack.Wrapper) {
+	if ø.hasSubroutes {
+		panic("already have subroutes, wrap before subrouting")
+	}
+	ø.rack.Wrap(middlewares...)
+}
+
 func (ø *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var m mux.RouteMatch
 	if ø.Router.Match(r, &m) {
@@ -37,11 +55,16 @@ func (ø *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ø.Router.NotFoundHandler.ServeHTTP(w, r)
 	}
 }
-func (ø *Router) Mount(mux *http.ServeMux) { mux.Handle(ø.path+"/", ø) }
+func (ø *Router) Mount(mux *http.ServeMux) { mux.Handle(ø.path, ø) }
+
+// overwrite the URL method with our own Route struct
+func (ø *Router) NewRoute() *Route { return &Route{ø.Router.NewRoute()} }
 
 func (ø *Router) SubRouter(p string, middlewares ...rack.Wrapper) (rr *Router) {
+	ø.hasSubroutes = true
 	middlewares = append(middlewares, ø.middlewares...)
-	rr = New(path.Join(ø.path, p), middlewares...)
+	p = path.Join(ø.path, p) + "/"
+	rr = New(p, middlewares...)
 	rr.Router.NotFoundHandler = ø.Router.NotFoundHandler
 	return
 }

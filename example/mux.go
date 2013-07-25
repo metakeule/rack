@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/metakeule/goh4/tag"
 	"github.com/metakeule/rack/router"
 	"github.com/metakeule/rack/wrapper"
@@ -41,18 +42,19 @@ var (
 )
 
 func init() {
-	index = router.New("",
+	index = router.New("/",
 		wrapper.Around{onlyLog("beforeOuter"), onlyLog("afterOuter")},
 		wrapper.Before{http.HandlerFunc(LogUrl)},
 		wrapper.Guard{http.HandlerFunc(favicon)},
 	)
 	index.NotFoundHandler = http.HandlerFunc(notFound)
-	admin = index.SubRouter("/admin", wrapper.Around{onlyLog("beforeAdmin"), onlyLog("afterAdmin")})
-	inner = admin.SubRouter("/inner", wrapper.Around{onlyLog("beforeInner"), onlyLog("afterInner")})
+	admin = index.SubRouter("/admin/", wrapper.Around{onlyLog("beforeAdmin"), onlyLog("afterAdmin")})
+	inner = admin.SubRouter("/inner/", wrapper.Around{onlyLog("beforeInner"), onlyLog("afterInner")})
 
 	index.Handle("/a", webAndLog("a"))
 	index.Handle("/b", webAndLog("b"))
 
+	admin.Handle("/", webAndLog("admin"))
 	admin.Handle("/a", webAndLog("adminA"))
 	admin.Handle("/b", webAndLog("adminB"))
 
@@ -63,5 +65,9 @@ func init() {
 }
 
 func main() {
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("listening at localhost:8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println("can't start server: ", err.Error())
+	}
 }

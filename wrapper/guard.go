@@ -26,3 +26,7 @@ func (ø Guard) Wrap(in http.Handler) (out http.Handler) {
 		}
 	})
 }
+
+func GuardFunc(fn func(http.ResponseWriter, *http.Request)) Guard {
+	return Guard{http.HandlerFunc(fn)}
+}

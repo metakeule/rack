@@ -13,3 +13,7 @@ func (ø After) Wrap(in http.Handler) (out http.Handler) {
 		ø.Handler.ServeHTTP(w, r)
 	})
 }
+
+func AfterFunc(fn func(http.ResponseWriter, *http.Request)) After {
+	return After{http.HandlerFunc(fn)}
+}

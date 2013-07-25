@@ -16,3 +16,7 @@ func (ø Around) Wrap(in http.Handler) (out http.Handler) {
 		ø.After.ServeHTTP(w, r)
 	})
 }
+
+func AroundFunc(before, after func(http.ResponseWriter, *http.Request)) Around {
+	return Around{http.HandlerFunc(before), http.HandlerFunc(after)}
+}
