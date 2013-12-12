@@ -7,6 +7,24 @@ import (
 	"path"
 )
 
+// is fullfilled by *mux.Router and *http.ServeMux
+type Muxer interface {
+	Handle(pattern string, handler http.Handler)
+	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
+}
+
+type GorillaRouterToMuxer struct {
+	*mux.Router
+}
+
+func (ø *GorillaRouterToMuxer) Handle(pattern string, handler http.Handler) {
+	_ = ø.Router.Handle(pattern, handler)
+}
+
+func (ø *GorillaRouterToMuxer) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	_ = ø.Router.HandleFunc(pattern, handler)
+}
+
 type Route struct{ *mux.Route }
 
 func (ø *Route) URL(vals ...string) string {
@@ -15,6 +33,11 @@ func (ø *Route) URL(vals ...string) string {
 		panic(err.Error())
 	}
 	return u.String()
+}
+
+func (ø *Route) Name(name string) *Route {
+	ø.Route.Name(name)
+	return ø
 }
 
 type Router struct {
@@ -55,7 +78,9 @@ func (ø *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ø.Router.NotFoundHandler.ServeHTTP(w, r)
 	}
 }
-func (ø *Router) Mount(mux *http.ServeMux) { mux.Handle(ø.path, ø) }
+func (ø *Router) Mount(m *http.ServeMux) {
+	m.Handle(ø.path, ø)
+}
 
 // overwrite the URL method with our own Route struct
 func (ø *Router) NewRoute() *Route { return &Route{ø.Router.NewRoute()} }
