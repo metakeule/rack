@@ -12,9 +12,8 @@ import (
 type verb int
 
 const (
-	_        = verb(0)
-	GET verb = 1 << iota
-	POST
+	POST verb = 1 << iota
+	GET
 	PUT
 	DELETE
 	PATCH
@@ -35,7 +34,6 @@ func (r *route) AddHandlerX(handler http.Handler, v verb) error {
 	_, has := r.handler[v]
 	if has {
 		return fmt.Errorf("handler for verb %s already defined", v)
-		// panic(fmt.Sprintf("handler for verb %s already defined", v))
 	}
 	r.handler[v] = handler
 	return nil
@@ -143,12 +141,9 @@ func (ø *MountedRouter) Path() string {
 
 func (ø *MountedRouter) registerRouteX(p string, rt *route) error {
 	if ø.parent == nil {
-
 		pp := path.Join(ø.Path(), p)
-
 		for v, h := range rt.handler {
 			if _, isSub := h.(*Router); !isSub {
-				// fmt.Printf("registering route for path: %s %s\n", v, pp)
 				r := rack.New(h)
 				r.Wrap(ø.middlewares...)
 				err := ø.PathNode.addX(pp, v, r)
@@ -160,11 +155,6 @@ func (ø *MountedRouter) registerRouteX(p string, rt *route) error {
 		return nil
 	}
 	pp := path.Join(ø.path, p)
-	/*
-		if p == "/" {
-			pp = ø.path + "#"
-		}
-	*/
 	newrt := NewRoute()
 	for v, h := range rt.handler {
 		if _, isSub := h.(*Router); !isSub {
@@ -176,9 +166,7 @@ func (ø *MountedRouter) registerRouteX(p string, rt *route) error {
 			}
 		}
 	}
-
 	return ø.parent.registerRouteX(pp, newrt)
-	//return ø.parent.registerRouteX(pp, rt)
 }
 
 type Router struct {
