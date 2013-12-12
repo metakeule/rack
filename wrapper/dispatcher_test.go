@@ -11,7 +11,7 @@ var _ = Suite(&dispatcherSuite{})
 func (s *dispatcherSuite) TestDispatch(c *C) {
 	r := makeRack(
 		Dispatch(
-			Match(
+			Map(
 				MatchQuery{"name", "peter"}, webwrite("peter"),
 				MatchQuery{"name", "paul"}, webwrite("paul"),
 			),

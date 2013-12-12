@@ -65,7 +65,7 @@ func (mh MatchHost) Match(r *http.Request) bool {
 }
 
 // data should be pairs of Matcher and http.Handler
-func Match(data ...interface{}) dispatchMap {
+func Map(data ...interface{}) dispatchMap {
 	m := dispatchMap{}
 	for i := 0; i < len(data); i += 2 {
 		m = append(m, matchHandler{data[i].(Matcher), data[i+1].(http.Handler)})
@@ -92,4 +92,18 @@ type MatchQuery struct {
 
 func (m MatchQuery) Match(r *http.Request) bool {
 	return r.URL.Query().Get(m.Key) == m.Val
+}
+
+type MatchFragment string
+
+func (m MatchFragment) Match(r *http.Request) bool {
+	return r.URL.Fragment == string(m)
+}
+
+type MatchHeader struct {
+	Key, Val string
+}
+
+func (m MatchHeader) Match(r *http.Request) bool {
+	return r.Header.Get(m.Key) == m.Val
 }
