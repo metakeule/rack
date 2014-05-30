@@ -63,82 +63,61 @@ func HandlerMethod(fn interface{}) http.Handler {
 	})
 }
 
-// consider a struct that is a http.ResponseWriter via embedding
-// now we want to
-func UnWrap(src interface{}, target interface{}) error {
-	srcVl := reflect.ValueOf(src)
-
-	if srcVl.Kind() != reflect.Ptr {
-		panic("src must be pointer")
+//func MustUnWrap(src interface{}, target interface{}) {
+func MustUnWrap(src http.ResponseWriter, target interface{}) {
+	err := UnWrap(src, target)
+	if err != nil {
+		panic(err.Error())
 	}
+}
+
+// consider a struct that is a http.ResponseWriter via embedding
+// now we want to unwrap this struct to get its properties.
+// since the struct we are looking for might not be the src but
+// instead itself wrapped inside the ResponseWriter property of
+// the given src we will do it recursivly untill be get
+// the struct we look for or did not find it
+func UnWrap(src http.ResponseWriter, target interface{}) error {
+	srcVl := reflect.ValueOf(src)
+	var srcIsPtr bool
+
+	//if srcVl.Kind() != reflect.Ptr {
+	//return fmt.Errorf("src must be pointer")
+	//}
 
 	if srcVl.Kind() == reflect.Ptr {
+		srcIsPtr = true
 		srcVl = reflect.Indirect(srcVl)
 	}
 	if srcVl.Kind() != reflect.Struct {
-		panic("src must be a struct or a pointer to a struct")
+		return fmt.Errorf("src must be a struct or a pointer to a struct")
 	}
 	tgtVl := reflect.ValueOf(target)
-	if tgtVl.Kind() != reflect.Ptr {
-		fmt.Printf("1. target must be a pointer to a pointer to a struct: %T, kind %s\n", target, tgtVl.Kind())
-		panic("1. target must be a pointer to a pointer to a struct")
+	if tgtVl.Kind() != reflect.Ptr ||
+		reflect.Indirect(tgtVl).Kind() != reflect.Ptr ||
+		reflect.Indirect(reflect.Indirect(tgtVl)).Kind() != reflect.Struct {
+		return fmt.Errorf("target must be a pointer to a pointer to a struct: %T\n", target)
 	}
 
-	if reflect.Indirect(tgtVl).Kind() != reflect.Ptr {
-		fmt.Printf("2. target must be a pointer to a pointer to a struct: %T, kind %s\n", target, reflect.Indirect(tgtVl).Kind())
-		panic("2. target must be a pointer to a pointer to a struct")
-	}
-
-	if reflect.Indirect(reflect.Indirect(tgtVl)).Kind() != reflect.Struct {
-		fmt.Printf("3. target must be a pointer to a pointer to a struct: %T, kind %s\n", target, reflect.Indirect(tgtVl).Kind())
-		panic("3. target must be a pointer to a pointer to a struct")
-	}
-
-	//fmt.Printf("%T vs %T\n", src, target)
-	// identical type
-	//if srcVl.Type() == reflect.Indirect(tgtVl).Type() {
-	if reflect.Indirect(reflect.ValueOf(src)).Type() == reflect.Indirect(reflect.Indirect(tgtVl)).Type() {
-		assoc(src, target)
-
-		//*target = *src
-		//tgtVl.Elem().Set(reflect.ValueOf(src))
-
-		//if srcVl.CanAddr() && tgtVl.CanSet() {
-		//		if reflect.ValueOf(src).Kind() == reflect.Ptr {
-		//tgtVl.Set(srcVl.Addr())
-		//addr := srcVl.Addr()
-		//			reflect.ValueOf(target).Elem().Set(reflect.ValueOf(src).Elem())
-		//		} else {
-		// fmt.Printf("can't set %T with address %T\n", target, src)
-		//			tgtVl.Elem().Set(srcVl)
-		//		}
-
-		//tgtVl.Elem().Set(srcVl)
-		//if srcVl.CanAddr() {
-		//tgtVl.Set(srcVl.Addr())
-		//tgtVl.Elem().Set(srcVl)
-		/*
-			} else {
-				return fmt.Errorf(
-					"can't address: %T",
-					src)
-			}
-		*/
+	if srcVl.Type() == reflect.Indirect(reflect.Indirect(tgtVl)).Type() {
+		if srcIsPtr {
+			assoc(src, target)
+		} else {
+			ref := reflect.New(srcVl.Type())
+			ref.Elem().Set(srcVl)
+			assoc(ref.Interface(), target)
+		}
 		return nil
 	}
 
 	field := srcVl.FieldByName("ResponseWriter")
 
 	if !field.IsValid() {
-		return fmt.Errorf(
-			"has no field ResponseWriter: %T",
-			src)
+		return fmt.Errorf("has no field ResponseWriter: %T", src)
 	}
 
 	if field.IsNil() {
-		return fmt.Errorf(
-			"ResponseWriter of %T is nil",
-			src)
+		return fmt.Errorf("ResponseWriter of %T is nil", src)
 	}
 
 	fkind := field.Elem().Kind()
@@ -154,7 +133,11 @@ func UnWrap(src interface{}, target interface{}) error {
 			reflect.Indirect(field.Elem()).Type().String())
 	}
 
-	return UnWrap(field.Interface().(http.ResponseWriter), target)
+	rw, ok := field.Interface().(http.ResponseWriter)
+	if !ok {
+		return fmt.Errorf("ResponseWriter field is no http.ResponseWriter, but %T", field.Interface())
+	}
+	return UnWrap(rw, target)
 }
 
 type context struct {

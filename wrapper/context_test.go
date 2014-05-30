@@ -29,12 +29,8 @@ func (c *ctx) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func check(w http.ResponseWriter, r *http.Request) {
-	_ = rack.New
 	c := &ctx{}
-	err := UnWrap(w, &c)
-	if err != nil {
-		panic(err.Error())
-	}
+	MustUnWrap(w, &c)
 	w.Write([]byte("#" + c.path + "#"))
 }
 
@@ -60,15 +56,13 @@ func (s *contextSuite) TestContextUnwrapIdentical(c *C) {
 		panic(err.Error())
 	}
 
-	/*
-		c3 := &ctx{}
-		err = UnWrap(&c1, &c3)
-		c.Assert(c3.path, Equals, "x")
+	c3 := &ctx{}
+	err = UnWrap(c1, &c3)
+	c.Assert(c3.path, Equals, "x")
 
-		if err != nil {
-			panic(err.Error())
-		}
-	*/
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 func (s *contextSuite) TestContextUnwrapNested(c *C) {
@@ -80,6 +74,14 @@ func (s *contextSuite) TestContextUnwrapNested(c *C) {
 		panic(err.Error())
 	}
 	c.Assert(c2.path, Equals, "x")
+
+	c3 := &ctx{}
+
+	err = UnWrap(c1, &c3)
+	if err != nil {
+		panic(err.Error())
+	}
+	c.Assert(c3.path, Equals, "x")
 }
 
 func (s *contextSuite) TestContextUnwrapError(c *C) {

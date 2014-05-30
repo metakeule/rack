@@ -19,6 +19,9 @@ type PathNode struct {
 
 	// If set, and we have nothing left to match, then we match on this node
 	leaf *PathLeaf
+
+	// the parent node
+	//parent *PathNode
 }
 
 // For the route /admin/forums/:forum_id:\d.*/suggestions/:suggestion_id:\d.*
@@ -72,12 +75,14 @@ func (pn *PathNode) addInternalX(segments []string, v verb, handler http.Handler
 	if wc {
 		if pn.wildcard == nil {
 			pn.wildcard = newPathNode()
+			//pn.wildcard.parent = pn
 		}
 		return pn.wildcard.addInternalX(segments[1:], v, handler, append(wildcards, wcName))
 	}
 	subPn, ok := pn.edges[seg]
 	if !ok {
 		subPn = newPathNode()
+		//subPn.parent = pn
 		pn.edges[seg] = subPn
 	}
 	return subPn.addInternalX(segments[1:], v, handler, wildcards)
