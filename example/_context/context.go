@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/metakeule/rack"
-	"github.com/metakeule/rack/wrapper"
+	"gopkg.in/metakeule/rack.v5"
+	"gopkg.in/metakeule/rack.v5/wrapper"
 	"net/http"
 	"os"
 )

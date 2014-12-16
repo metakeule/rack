@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/metakeule/rack"
+	"gopkg.in/metakeule/rack.v5"
 	"net/http"
 	"path"
 )

@@ -2,7 +2,7 @@ package wrapper
 
 import (
 	"fmt"
-	"github.com/metakeule/rack"
+	"gopkg.in/metakeule/rack.v5"
 	. "launchpad.net/gocheck"
 	"net/http"
 )

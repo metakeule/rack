@@ -3,8 +3,8 @@ package router2
 import (
 	"fmt"
 	// "fmt"
-	"github.com/metakeule/rack"
-	wr "github.com/metakeule/rack/wrapper"
+	"gopkg.in/metakeule/rack.v5"
+	wr "gopkg.in/metakeule/rack.v5/wrapper"
 	. "launchpad.net/gocheck"
 	"net/http"
 )

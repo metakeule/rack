@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	. "github.com/metakeule/goh4/tag"
-	"github.com/metakeule/rack/router"
-	"github.com/metakeule/rack/wrapper"
+	. "gopkg.in/metakeule/goh4.v5/tag"
+	"gopkg.in/metakeule/rack.v5/router"
+	"gopkg.in/metakeule/rack.v5/wrapper"
 	"log"
 	"net/http"
 )

@@ -3,9 +3,9 @@ package router2
 import (
 	"bytes"
 	"fmt"
-	"github.com/metakeule/meta"
-	"github.com/metakeule/rack"
-	"github.com/metakeule/rack/helper"
+	"gopkg.in/metakeule/meta.v5"
+	"gopkg.in/metakeule/rack.v5"
+	"gopkg.in/metakeule/rack.v5/helper"
 	"net/http"
 	"reflect"
 	// "net/url"

@@ -1,7 +1,7 @@
 package wrapper
 
 import (
-	"github.com/metakeule/rack/helper"
+	"gopkg.in/metakeule/rack.v5/helper"
 	"net/http"
 )
 

@@ -2,9 +2,9 @@ package wrapper
 
 import (
 	"fmt"
-	// "github.com/metakeule/rack"
-	// "github.com/metakeule/rack/wrapper"
-	"github.com/metakeule/rack"
+	// "gopkg.in/metakeule/rack.v5"
+	// "gopkg.in/metakeule/rack.v5/wrapper"
+	"gopkg.in/metakeule/rack.v5"
 	. "launchpad.net/gocheck"
 	"net/http"
 	"net/http/httptest"
